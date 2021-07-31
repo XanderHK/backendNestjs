@@ -1,20 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { User } from 'src/database/entities/user';
-import { getMongoManager } from 'typeorm';
 import * as bcrypt from 'bcrypt'
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from 'src/database/entities/user';
 import { RegisterDto } from './dto';
 
 @Injectable()
 export class AuthService {
 
-    async CreateUser(data : RegisterDto) {
-		const salt = await bcrypt.genSalt(10);
-		const user = new User()
-		user.name = data.name
-		user.email = data.email
-		user.password = await bcrypt.hash(data.password, salt)
-   
-		const manager = getMongoManager();
-		await manager.save(user)
+	constructor(
+		@InjectRepository(User)
+		private usersRepository: Repository<User>,
+	  ) {}
+
+    async CreateUser(data : RegisterDto) : Promise<User | string> {
+		const salt = await bcrypt.genSalt(10)
+		data.password = await bcrypt.hash(data.password, salt)
+		const user = this.usersRepository.create(data)
+
+		try {
+			return await this.usersRepository.save(user)
+		}catch(error) {
+			return 'Something went wrong.'
+		}
     }
 }

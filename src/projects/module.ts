@@ -1,18 +1,12 @@
 import { Module } from '@nestjs/common';
-import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { editFileName, imageFileFilter } from 'src/utils/file.utils';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Project } from 'src/database/entities/project';
+import { storage } from 'src/multer';
 import { ProjectsController } from './controller';
 import { ProjectService } from './service';
 
 @Module({
-  imports: [MulterModule.register({
-    storage : diskStorage({
-        destination: './uploads',
-        filename: editFileName,
-    }),
-    fileFilter : imageFileFilter
-  })],
+  imports: [storage(), TypeOrmModule.forFeature([Project])],
   controllers: [ProjectsController],
   providers: [ProjectService],
 })

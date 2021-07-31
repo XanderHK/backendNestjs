@@ -1,11 +1,9 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import * as bodyParser from 'body-parser'
-import { connectDB } from './database/connection';
 import { RootModule } from './module'
 
 async function bootstrap() {
-  await connectDB()
   const app = await NestFactory.create(RootModule)
   app.enableCors({
     origin : '*',

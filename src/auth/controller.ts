@@ -2,6 +2,7 @@ import { Controller, Get, Post, Req, Res, Body } from '@nestjs/common';
 import { AuthService } from './service';
 import { LoginDto, RegisterDto, TokenDto } from './dto';
 import { refreshJwt, signJwt } from 'src/jwt';
+import { User } from 'src/database/entities/user';
 
 @Controller('/auth')
 export class AuthController {
@@ -16,8 +17,8 @@ export class AuthController {
     }
 
     @Post('/register')
-    async Register(@Body() body : RegisterDto) {
-		this.authService.CreateUser(body)
+    async Register(@Body() body : RegisterDto) : Promise<User | string> {
+		return this.authService.CreateUser(body)
     }
 
     @Post('/token')
