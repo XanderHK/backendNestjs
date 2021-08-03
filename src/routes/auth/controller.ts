@@ -15,22 +15,45 @@ export class AuthController {
 
 	@Post('/register')
 	async Register(@Body() body: RegisterDto): Promise<User | string> {
-		return this.authService.CreateUser(body)
+		if(!new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})").test(body.password)) {
+			return (
+				`Password must: 
+				\r contain one lowercase character 
+				\r contain one uppercase character 
+				\r contain one numeric character 
+				\r contain one special character 
+				\r be atleast 8 characters long`
+			)
+		}
+
+		const [isUnique, error] = await this.authService.UniqueUser(body)
+		if(isUnique){
+			const [user, error] = await this.authService.CreateUser(body)
+			if(error){
+				return error
+			}
+			return user
+		}
+		return error
 	}
 
 	@Post('/token')
-	async Token(@Body() body: TokenDto): Promise<string> {
-		const decodedJwt = verifyJwt(body.token)
-		if (decodedJwt !== null) {
-			return this.authService.RenewToken(decodedJwt)
+	async TokenExtend(@Body() body: TokenDto): Promise<string> {
+		const [user, error] = verifyJwt(body.token)
+		if (user !== null) {
+			const [renewedToken, error] : [string, string] = await this.authService.RenewToken(user)
+			if(error){
+				return error
+			}
+			return renewedToken
 		}
-		return null
+		return error
 	}
 
 	@Post('/token-expired')
 	async TokenExpired(@Body() body: TokenDto) {
-		const decodedJwt = verifyJwt(body.token)
-		if (decodedJwt !== null) {
+		const [user, error] = verifyJwt(body.token)
+		if (user !== null) {
 			return true
 		}
 		return false

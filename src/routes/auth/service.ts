@@ -18,58 +18,93 @@ export class AuthService {
 		private tokensRepository: Repository<Token>,
 	) { }
 
-	async CreateUser(data: RegisterDto): Promise<User | string> {
-		const salt = await bcrypt.genSalt(10)
-		data.password = await bcrypt.hash(data.password, salt)
-		const user = this.usersRepository.create(data)
-
+	/**
+	 * 
+	 * @param data 
+	 * @returns 
+	 */
+	async CreateUser(data: RegisterDto): Promise<[User, string]> {
 		try {
-			return this.usersRepository.save(user)
+			const salt : string = await bcrypt.genSalt(10)
+			data.password = await bcrypt.hash(data.password, salt)
+			const user : User = this.usersRepository.create(data)
+			const savedUser : User = await this.usersRepository.save(user)
+			return [savedUser, null]
 		} catch (error) {
-			return 'Something went wrong.'
+			return [null, error]
 		}
 	}
 
-	async RenewToken(user): Promise<string> {
+	/**
+	 * 
+	 * @param user 
+	 * @returns 
+	 */
+	async RenewToken(user : User): Promise<[string, string]> {
 		try {
 			const refreshToken: Token = await this.tokensRepository.findOne({ userId: new ObjectId(user._id) })
 			if (refreshToken) {
-				return signJwt({
+				const newToken : string =  signJwt({
 					id: user._id,
 					name: user.name,
 					email: user.email,
 					password: user.password
 				})
+				return [newToken, null]
 			}
-			return null
+			return [null, 'Couldn\'t find refresh token']
 		} catch (error) {
-			return error
+			return [null, error]
 		}
 	}
 
-	async Login(data: LoginDto): Promise<string> {
-		try {
+	/**
+	 * 
+	 * @param data 
+	 * @returns 
+	 */
+	async Login(data: LoginDto): Promise<[string, string]> {
+		try{
 			const user: User = await this.usersRepository.findOne({ email: data.email })
-			if (user) {
-				const validPwd = await bcrypt.compare(data.password, user.password)
-				if (validPwd) {
-					const accessToken = signJwt(user)
-					const refreshToken = refreshJwt(user)
-					const checkIfExists = await this.tokensRepository.findOne({ userId: user._id })
+			if(user){
+				const validPwd : boolean = await bcrypt.compare(data.password, user.password)
+				if(validPwd){
+					try{
+						const accessToken : string = signJwt(user)
+						const refreshToken : string = refreshJwt(user)
+						const checkIfExists : Token = await this.tokensRepository.findOne({ userId: user._id })
 
-					if (checkIfExists) await this.tokensRepository.delete({ userId: user._id })
+						if (checkIfExists) await this.tokensRepository.delete({ userId: user._id }).catch(err => console.log(err))
 
-					const newToken: Token = this.tokensRepository.create({ userId: user._id, token: refreshToken })
-					try {
-						this.tokensRepository.save(newToken)
-						return accessToken
-					} catch (error) {
-						return error
+						const newRefreshToken: Token = this.tokensRepository.create({ userId: user._id, token: refreshToken })
+						this.tokensRepository.save(newRefreshToken)
+						return [accessToken, null]
+					}catch(error){
+						return [null, error]
 					}
 				}
+				return [null, 'Password doesn\'t match.']
 			}
-		} catch (error) {
-			return error
+			return [null, 'No user found associated with included email.']
+		}catch(error){
+			return [null, error]
+		}
+	}
+
+	/**
+	 * 
+	 * @param body 
+	 * @returns 
+	 */
+	async UniqueUser(body: RegisterDto) : Promise<[boolean, string]> { 
+		try{
+			const result : User = await this.usersRepository.findOne({email : body.email})
+			if(result) { 
+				return [false, null]
+			}
+			return [true, 'Email is already in use']
+		}catch(error) {
+			return [null, error]
 		}
 	}
 }

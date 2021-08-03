@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from 'src/database/entities/project';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { CreateDto, EditDto } from './dto';
 import { ObjectId } from 'mongodb';
 
@@ -13,34 +13,75 @@ export class ProjectService {
 		private projectsRepository: Repository<Project>,
 	) { }
 
-
-	async Create(data: CreateDto): Promise<Project | string> {
-		const project: Project = this.projectsRepository.create(data)
-
+	/**
+	 * 
+	 * @param data 
+	 * @returns 
+	 */
+	async Create(data: CreateDto): Promise<[Project, string]> {
 		try {
-			return this.projectsRepository.save(project)
+			const project: Project = this.projectsRepository.create(data)
+			const savedProject : Project = await this.projectsRepository.save(project);
+			return [savedProject, null]
 		} catch (error) {
-			return 'Something went wrong.'
+			return [null, error]
 		}
 	}
 
-	async Edit(id: string, data: EditDto) {
-		const result = await this.projectsRepository.update({ _id: new ObjectId(id) }, data)
-		console.log(result)
+	/**
+	 * 
+	 * @param id 
+	 * @param data 
+	 * @returns 
+	 */
+	async Edit(id: string, data: EditDto) : Promise<[number, string]> {
+		try{
+			const result : UpdateResult = await this.projectsRepository.update({ _id: new ObjectId(id) }, data)
+			return [result.raw.result.ok, null]
+		}catch(error){
+			return [null, error]
+		}
 	}
 
-	async FindAll(): Promise<Project[]> {
-		return this.projectsRepository.find()
+	/**
+	 * 
+	 * @returns 
+	 */
+	async FindAll(): Promise<[Project[], string]> {
+		try{
+			const projects : Project[] = await this.projectsRepository.find()
+			return [projects, null]
+		}catch(error){
+			return [null, error]
+		}
 	}
 
-	async Find(id: string): Promise<Project> {
-		const project = await this.projectsRepository.findOne({ _id: new ObjectId(id) })
-		console.log(project)
-		return this.projectsRepository.findOne({ _id: new ObjectId(id) })
+	/**
+	 * 
+	 * @param id 
+	 * @returns 
+	 */
+	async Find(id: string): Promise<[Project, string]> {
+		try{
+			const project = await this.projectsRepository.findOne({ _id: new ObjectId(id) })
+			return [project, null]
+		}catch(error){
+			return [null, error]
+		}
 	}
 
-	async Delete(id: string) {
-		this.projectsRepository.delete({ _id: new ObjectId(id) })
+	/**
+	 * 
+	 * @param id 
+	 * @returns 
+	 */
+	async Delete(id: string) : Promise<[number, string]> {
+		try{
+			const result : DeleteResult = await this.projectsRepository.delete({ _id: new ObjectId(id) })
+			return [result.raw.result.ok, null]
+		}catch(error){
+			return [null, error]
+		}
 	}
 
 }

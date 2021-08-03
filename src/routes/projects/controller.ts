@@ -18,12 +18,12 @@ export class ProjectsController {
     }
 
     @Put('/edit/:id')
-    async EditProject(@Param('id') id, @Body() body: EditDto) {
-        this.projectService.Edit(id, body)
+    async EditProject(@Param('id') id : string, @Body() body: EditDto) {
+        return this.projectService.Edit(id, body)
     }
 
     @Delete('/delete/:id')
-    async DeleteProject(@Param('id') id, @Req() req: Express.Request) {
+    async DeleteProject(@Param('id') id : string, @Req() req: Express.Request) {
         return this.projectService.Delete(id)
     }
 
@@ -33,12 +33,12 @@ export class ProjectsController {
     }
 
     @Get(':id')
-    async GetProject(@Param('id') id) {
-        return await this.projectService.Find(id)
+    async GetProject(@Param('id') id : string) {
+        return this.projectService.Find(id)
     }
 
     @Get(':imgPath')
-    async GetUploadedFile(@Param('imgPath') image, @Res() res) {
+    async GetUploadedFile(@Param('imgPath') image : string, @Res() res) {
         return res.sendFile(image, { root: './uploads' })
     }
 }

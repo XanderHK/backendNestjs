@@ -9,8 +9,10 @@ export class LoginDto {
     password: string;
 }
 
+
 export class RegisterDto {
     @IsNotEmpty()
+    @IsEmail()
     email: string;
 
     @IsNotEmpty()

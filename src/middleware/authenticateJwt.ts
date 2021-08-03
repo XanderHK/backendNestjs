@@ -11,10 +11,10 @@ export class AuthenticateJwtMiddleware implements NestMiddleware {
 			return res.status(401).send('No auth token')
 		}
 
-		const user : User = verifyJwt(jwtToken)
+		const [user, error] = verifyJwt(jwtToken)
 
-		if(user === null) {
-		return res.status(403).send('Token invalid or expired')
+		if(error) {
+			return res.status(403).send(error)
 		}
 
 		req.user = user
