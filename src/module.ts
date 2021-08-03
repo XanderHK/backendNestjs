@@ -1,7 +1,7 @@
 import { RootController } from "./controller";
-import { AuthModule } from "./auth/module";
+import { AuthModule } from "./routes/auth/module";
 import { Module, NestModule } from "@nestjs/common";
-import { ProjectModule } from "./projects/module";
+import { ProjectModule } from "./routes/projects/module";
 import { dbConnect } from "./database/db";
 
 
