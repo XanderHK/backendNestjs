@@ -9,7 +9,7 @@ export class AuthController {
 	constructor(private readonly authService: AuthService) { }
 
 	@Post('/login')
-	async Login(@Body() body: LoginDto) {
+	async Login(@Body() body: LoginDto) : Promise<[string, string]> {
 		return this.authService.Login(body)
 	}
 
@@ -51,7 +51,7 @@ export class AuthController {
 	}
 
 	@Post('/token-expired')
-	async TokenExpired(@Body() body: TokenDto) {
+	async TokenExpired(@Body() body: TokenDto) : Promise<boolean> {
 		const [user, error] = verifyJwt(body.token)
 		if (user !== null) {
 			return true

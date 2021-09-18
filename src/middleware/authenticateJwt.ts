@@ -1,6 +1,5 @@
 import { Injectable, NestMiddleware} from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { User } from 'src/database/entities/user';
 import { verifyJwt } from 'src/jwt';
 
 @Injectable()

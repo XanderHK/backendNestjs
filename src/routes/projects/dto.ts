@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, ValidateIf, IsEmail, IsString } from 'class-validator'
+import { IsNotEmpty, IsOptional, ValidateIf, IsEmail, IsString, ValidatorConstraint } from 'class-validator'
 
 
 export class CreateDto {
